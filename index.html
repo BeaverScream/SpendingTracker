@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spending Tracker</title>
+  <link rel="stylesheet" href="styles.css"> <!-- Link to external CSS -->
+</head>
+<body>
+  <h1>Spending Tracker</h1>
+  <form id="scrapeForm">
+    <label for="spreadsheetId">Enter Spreadsheet ID:</label>
+    <input type="text" id="spreadsheetId" name="spreadsheetId" required>
+    
+    <label for="user">Select User:</label>
+    <select id="user" name="user" required>
+      <option value="">--Select a user--</option>
+      <option value="user1">User 1</option>
+      <option value="user2">User 2</option>
+    </select>
+    
+    <button type="submit">Start Scraping</button>
+  </form>
+
+  <script src="script.js"></script> <!-- Link to external JavaScript -->
+</body>
+</html>
