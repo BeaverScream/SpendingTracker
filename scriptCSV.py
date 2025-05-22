@@ -25,7 +25,7 @@ while True:
         print("Invalid input. Please enter a number (1 or 2).")
 
 # === Spreadsheet setup ===
-spreadsheet_id = '1k3JZUGIxrI4QtqJjshUlMN3_ixoKegOVs8W_4tEr2y8'  # hardcoded
+spreadsheet_id = '1k3JZUGIxrI4QtqJjshUlMN3_ixoKegOVs8W_4tEr2y8'
 spreadsheet = client.open_by_key(spreadsheet_id)
 
 # === Find worksheet that contains a keyword in its title ===
@@ -48,10 +48,10 @@ def format_date(date_str):
     for fmt in ("%m/%d/%Y", "%Y-%m-%d"):
         try:
             date_obj = datetime.strptime(date_str, fmt)
-            return date_obj.strftime("%b %d")  # e.g. 'May 14'
+            return date_obj.strftime("%b %d")
         except ValueError:
             continue
-    return date_str  # fallback
+    return date_str
 
 def infer_category(detail):
     lower_detail = detail.lower()
@@ -75,10 +75,16 @@ def infer_category(detail):
 start_row = 11
 current_row = start_row
 
+# Find first empty row in column A
+while worksheet.acell(f"A{current_row}").value:
+    current_row += 1
+
+batch_data = []
+
 for row in rows:
     if bankname == "tangerine":
         if len(row) < 5:
-            continue  # skip malformed rows
+            continue
 
         date_raw = row[0].strip()
         payment_type = row[1].strip()
@@ -88,12 +94,8 @@ for row in rows:
 
         if not date_raw or not transaction_detail or not cost_raw:
             continue
-
-        if 'FREEDOM' in transaction_detail.upper():
-            continue  # skip FREEDOM
-
-        if 'PREAUTHORIZED' in transaction_detail.upper():
-            continue  # optional
+        if 'FREEDOM' in transaction_detail.upper() or 'PREAUTHORIZED' in transaction_detail.upper():
+            continue
 
         formatted_date = format_date(date_raw)
 
@@ -105,42 +107,48 @@ for row in rows:
         cost_value = -float(cost_raw.replace(',', '').replace('$', '').strip())
         formula = f"={abs(cost_value)}-{reward}"
 
-        while worksheet.acell(f"A{current_row}").value:
-            current_row += 1
+        row_data = [formatted_date, transaction_detail, category]
+        if user_type == 1:
+            row_data.extend([formula, ''])  # D=amount, E=empty
+        else:
+            row_data.extend(['', formula])  # D=empty, E=amount
 
-        worksheet.update_acell(f'A{current_row}', formatted_date)
-        worksheet.update_acell(f'B{current_row}', transaction_detail)
-        worksheet.update_acell(f'C{current_row}', category)
-        amount_column = 'D' if user_type == 1 else 'E'
-        worksheet.update_acell(f'{amount_column}{current_row}', formula)
+        batch_data.append(row_data)
 
     elif bankname == "cibc":
         if len(row) < 3:
-            continue  # skip malformed rows
+            continue
 
         date_raw = row[0].strip()
         transaction_detail = row[1].strip()
         cost_raw = row[2].strip()
-        refund_raw = row[3].strip()
 
         if not date_raw or not transaction_detail or not cost_raw:
             continue
-
         if 'FREEDOM' in transaction_detail.upper():
-            continue  # skip FREEDOM
+            continue
 
         formatted_date = format_date(date_raw)
         cost_value = -float(cost_raw.replace(',', '').replace('$', '').strip())
         formula = f"={abs(cost_value)}"
         category = infer_category(transaction_detail)
 
-        while worksheet.acell(f"A{current_row}").value:
-            current_row += 1
+        row_data = [formatted_date, transaction_detail, category]
+        if user_type == 1:
+            row_data.extend([formula, ''])  # D=amount, E=empty
+        else:
+            row_data.extend(['', formula])  # D=empty, E=amount
 
-        worksheet.update_acell(f'A{current_row}', formatted_date)
-        worksheet.update_acell(f'B{current_row}', transaction_detail)
-        worksheet.update_acell(f'C{current_row}', category)
-        amount_column = 'D' if user_type == 1 else 'E'
-        worksheet.update_acell(f'{amount_column}{current_row}', formula)
+        batch_data.append(row_data)
 
-print("✅ All applicable rows (excluding FREEDOM) processed and uploaded to Google Sheet.")
+# === Perform batch update ===
+if batch_data:
+    end_row = current_row + len(batch_data) - 1
+    range_str = f"A{current_row}:E{end_row}"
+    # worksheet.update(range_str, batch_data)
+    # worksheet.update(values=batch_data, range_name=range_str)
+    worksheet.update(range_name=range_str, values=batch_data, value_input_option='USER_ENTERED')
+
+    print("✅ All applicable rows (excluding FREEDOM) processed and uploaded to Google Sheet.")
+else:
+    print("⚠️ No valid data to upload.")
