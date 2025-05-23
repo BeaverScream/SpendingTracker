@@ -1,0 +1,23 @@
+# Service Account Keys
+# IMPORTANT: If you use a different name for your Google Service Account key file,
+# add that name to this .gitignore file to prevent committing it.
+sample-25a27-e4c1004f429c.json
+*.json # Be cautious with this rule if you have other essential JSON files not to be ignored.
+
+# Python virtual environment
+venv/
+*.pyc
+__pycache__/
+
+# Log files
+*.log
+
+# IDE and editor specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db

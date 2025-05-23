@@ -14,8 +14,7 @@ logger = logging.getLogger(__name__)
 
 # === Google Sheets setup ===
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-creds = ServiceAccountCredentials.from_json_keyfile_name('sample-25a27-e4c1004f429c.json', scope)
-client = gspread.authorize(creds)
+# creds and client will be initialized within upload_to_sheet, using the provided keyfile_path
 
 def format_date(date_str):
     """
@@ -151,7 +150,7 @@ def prepare_batch_data(rows, bankname, user_type):
     logger.debug(f"Prepared batch data with {len(batch_data)} rows.")
     return batch_data
 
-def upload_to_sheet(spreadsheet_id, worksheet_keyword, csv_filename, bankname, user_type):
+def upload_to_sheet(spreadsheet_id, worksheet_keyword, csv_filename, bankname, user_type, keyfile_path):
     """
     Upload parsed CSV data into specified Google Sheet worksheet.
 
@@ -161,10 +160,14 @@ def upload_to_sheet(spreadsheet_id, worksheet_keyword, csv_filename, bankname, u
         csv_filename (str): Path to the CSV file.
         bankname (str): Bank source ('tangerine' or 'cibc').
         user_type (int): 1 = you, 2 = husband.
+        keyfile_path (str): Path to the Google service account JSON keyfile.
 
     Raises:
         ValueError: If worksheet is not found by keyword.
     """
+    creds = ServiceAccountCredentials.from_json_keyfile_name(keyfile_path, scope)
+    client = gspread.authorize(creds)
+
     spreadsheet = client.open_by_key(spreadsheet_id)
     worksheet = find_worksheet(spreadsheet, worksheet_keyword)
     if not worksheet:
