@@ -4,38 +4,94 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CSV Uploader</title>
-    <link rel="stylesheet" href="styles.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        /* Ensures the label and input stack properly inside the form-group */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Basic styling for the file input itself (browser defaults are hard to style) */
+        input[type="file"] {
+            padding: 8px 0;
+        }
+
+        /* Custom style for the response area border */
+        .response-box {
+            border-left: 5px solid theme('colors.gray.300'); /* Use a subtle left border to indicate status */
+            transition: border-color 0.3s;
+        }
+
+        /* The JS will update these border colors on success/error */
+        .response-success {
+            border-color: theme('colors.green.500') !important;
+        }
+
+        .response-error {
+            border-color: theme('colors.red.500') !important;
+        }
+    </style>
 </head>
-<body>
-    <div class="container">
-        <h1>Upload Bank CSV to Google Sheets</h1>
-        <form id="uploadForm" enctype="multipart/form-data">
-            <label for="spreadsheet_id">Spreadsheet ID:</label>
-            <input type="text" id="spreadsheet_id" name="spreadsheet_id" required>
+<body class="bg-gray-100 p-8">
+    
+    <div class="container bg-white p-8 rounded-lg shadow-xl mx-auto max-w-2xl">
+        
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">Upload Bank CSV to Google Sheets</h1>
+        
+        <form id="uploadForm" enctype="multipart/form-data" class="grid grid-cols-2 gap-x-6 gap-y-4">
+            
+            <div class="form-group">
+                <label for="spreadsheet_id" class="text-sm font-medium text-gray-600 mb-1">Spreadsheet ID:</label>
+                <input type="text" id="spreadsheet_id" name="spreadsheet_id" required 
+                       class="border border-gray-300 p-2 rounded-md focus:ring-blue-500 focus:border-blue-500">
+            </div>
 
-            <label for="keyword">Keyword (e.g., 'Dec' for month):</label>
-            <input type="text" id="keyword" name="keyword" required>
+            <div class="form-group">
+                <label for="keyword" class="text-sm font-medium text-gray-600 mb-1">Keyword (e.g., 'Dec' for month):</label>
+                <input type="text" id="keyword" name="keyword" required
+                       class="border border-gray-300 p-2 rounded-md focus:ring-blue-500 focus:border-blue-500">
+            </div>
 
-            <label for="bankname">Bank Name:</label>
-            <select id="bankname" name="bankname" required>
-                <option value="tangerine">Tangerine</option>
-                <option value="cibc">CIBC</option>
-            </select>
+            <div class="form-group">
+                <label for="bankname" class="text-sm font-medium text-gray-600 mb-1">Bank Name:</label>
+                <select id="bankname" name="bankname" required
+                        class="border border-gray-300 p-2 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                    <option value="tangerine">Tangerine</option>
+                    <option value="cibc">CIBC</option>
+                </select>
+            </div>
 
-            <label for="usertype">User Type:</label>
-            <select id="usertype" name="usertype" required>
-                <option value="1">User 1</option>
-                <option value="2">User 2</option>
-            </select>
+            <div class="form-group">
+                <label for="usertype" class="text-sm font-medium text-gray-600 mb-1">User Type:</label>
+                <select id="usertype" name="usertype" required
+                        class="border border-gray-300 p-2 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                    <option value="1">User 1</option>
+                    <option value="2">User 2</option>
+                </select>
+            </div>
 
-            <label for="csv_file">CSV File:</label>
-            <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
-
-            <input type="submit" value="Upload">
+            <div class="form-group col-span-2">
+                <label for="csv_file" class="text-sm font-medium text-gray-600 mb-1">CSV File:</label>
+                <input type="file" id="csv_file" name="csv_file" accept=".csv" required 
+                       class="text-gray-600 border border-gray-300 p-2 rounded-md bg-gray-50 file:mr-4 file:py-2 file:px-4
+                              file:rounded-md file:border-0 file:text-sm file:font-semibold
+                              file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+            </div>
+            
+            <div class="col-span-2 flex justify-center mt-4">
+                <button type="submit" class="upload-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition duration-150 shadow-md">
+                    Upload
+                </button>
+            </div>
+            
         </form>
-        <div id="responseArea" class="hidden">
-            <h3>Server Response:</h3>
-            <pre id="responseText"></pre>
+        
+        <div id="responseArea" class="server-response response-box hidden p-4 mt-8 bg-gray-50 rounded-lg">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Server Response:</h3>
+            <pre id="responseText" class="text-sm text-gray-800 whitespace-pre-wrap font-mono"></pre>
         </div>
     </div>
 
@@ -47,25 +103,34 @@
             const responseArea = document.getElementById('responseArea');
             const responseText = document.getElementById('responseText');
 
-            responseArea.classList.remove('hidden');
+            // Show response area and set initial state
+            responseArea.classList.remove('hidden', 'response-success', 'response-error');
             responseText.textContent = 'Uploading...';
-
+            
             try {
                 const response = await fetch('/upload', {
                     method: 'POST',
                     body: formData
                 });
-                const result = await response.json();
+                
+                const contentType = response.headers.get("content-type");
+                let result;
+                if (contentType && contentType.includes("application/json")) {
+                    result = await response.json();
+                } else {
+                    result = { message: await response.text() || 'No response body provided.' };
+                }
+
                 if (response.ok) {
                     responseText.textContent = JSON.stringify(result, null, 2);
-                    responseArea.style.borderColor = 'green';
+                    responseArea.classList.add('response-success');
                 } else {
                     responseText.textContent = JSON.stringify(result, null, 2);
-                    responseArea.style.borderColor = 'red';
+                    responseArea.classList.add('response-error');
                 }
             } catch (error) {
                 responseText.textContent = 'Error submitting form: ' + error.message;
-                responseArea.style.borderColor = 'red';
+                responseArea.classList.add('response-error');
             }
         });
     </script>
