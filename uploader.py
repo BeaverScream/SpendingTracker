@@ -46,18 +46,27 @@ def infer_category(detail):
     """
     lower_detail = detail.lower()
     if any(keyword in lower_detail for keyword in [
-        "mcdonald", "popeyes", "ubereats", "steve's", "doordash",
-        "hee rae deung", "fantuan", "breka", "big way hot pot"
+        "mcdonald", "popeyes", "ubereats", "steve's", "doordash", 'tim hortons', 'sushi',
+        "hee rae deung", "fantuan", "breka", "big way hot pot", 'ramen'
     ]):
         return "Restaurant"
     elif any(keyword in lower_detail for keyword in [
-        "costco", "save on foods", "urban fare", "h-mart", "oddbunch", "chit chat"
+        "costco", "save on foods", "urban fare", "h-mart", "oddbunch", "chit chat", "wal-mart", 
+        "no frills", "hellofresh", "chefs plate"
     ]):
         return "Groceries"
     elif any(keyword in lower_detail for keyword in [
         "impark", "trip", "taxi", "uberone", "compass"
     ]):
         return "Transportation"
+    elif any(keyword in lower_detail for keyword in [
+        "super save", "esso", "petro", "shell", "husky"
+    ]):
+        return "Fuel"
+    elif any(keyword in lower_detail for keyword in [
+        "oldnavy", "carters"
+    ]):
+        return "Kido"
     else:
         return "Other Expenses"
 
@@ -101,19 +110,19 @@ def prepare_batch_data(rows, bankname, user_type):
 
             if not date_raw or not transaction_detail or not cost_raw:
                 continue
-            if 'FREEDOM' in transaction_detail.upper():
+            if 'FREEDOM' in transaction_detail.upper() or \
+                'ROGERS' in transaction_detail.upper():
                 continue
             if 'PREAUTHORIZED' in transaction_detail.upper():
                 continue
 
             formatted_date = format_date(date_raw)
             reward_match = re.search(r"Rewards earned: ([\d.]+)", reward_category)
-            category_match = re.search(r"Category: ([\w &]+)", reward_category)
             reward = reward_match.group(1) if reward_match else '0'
-            category = category_match.group(1) if category_match else ''
             cost_value = -float(cost_raw.replace(',', '').replace('$', '').strip())
             formula = f"={abs(cost_value)}-{reward}"
-
+            category = infer_category(transaction_detail)
+            
             row_values = [formatted_date, transaction_detail, category]
             if user_type == 1:
                 row_values.extend([formula, ''])
@@ -131,7 +140,8 @@ def prepare_batch_data(rows, bankname, user_type):
 
             if not date_raw or not transaction_detail or not cost_raw:
                 continue
-            if 'FREEDOM' in transaction_detail.upper():
+            if 'FREEDOM' in transaction_detail.upper() or \
+                'ROGERS' in transaction_detail.upper():
                 continue
 
             formatted_date = format_date(date_raw)

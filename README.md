@@ -28,9 +28,9 @@ This project provides a web server to upload bank transaction CSV files (from Ta
 4.  **Google Service Account Key**:
     *   This application uses a Google Service Account to interact with your Google Sheets.
     *   You need to obtain a JSON key file for your service account from the Google Cloud Console.
-    *   The application is currently configured to look for a key file named `sample-25a27-e4c1004f429c.json` in the root directory of the project.
-    *   **IMPORTANT SECURITY NOTE**: The `sample-25a27-e4c1004f429c.json` included in this repository might be a placeholder. **DO NOT use placeholder or publicly exposed keys for sensitive data.** Replace it with your actual service account key file.
-    *   Ensure your actual key file is named `sample-25a27-e4c1004f429c.json` and placed in the root directory, OR modify the `keyfile_path` variable in `server.py` to point to your key file's actual name and location.
+    *   The application is currently configured to look for a key file named `googleSpreadsheetAPIKEY.json` in the root directory of the project.
+    *   **IMPORTANT SECURITY NOTE**: The `googleSpreadsheetAPIKEY.json` included in this repository might be a placeholder. **DO NOT use placeholder or publicly exposed keys for sensitive data.** Replace it with your actual service account key file.
+    *   Ensure your actual key file is named `googleSpreadsheetAPIKEY.json` and placed in the root directory, OR modify the `keyfile_path` variable in `server.py` to point to your key file's actual name and location.
     *   **NEVER commit your actual private key file to version control.** If you are using Git, add the name of your actual key file to your `.gitignore` file.
 
 ## Running the Server

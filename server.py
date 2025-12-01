@@ -29,6 +29,9 @@ def upload_file():
     bankname = request.form.get('bankname')
     usertype_str = request.form.get('usertype')
     csv_file = request.files.get('csv_file')
+    
+    # API KEY in .json format. YOU MUST MAKE SURE THIS IS CORRECT
+    keyfile_path = 'googleSpreadsheetAPIKEY.json'
 
     # File validation
     if not csv_file or csv_file.filename == '':
@@ -51,15 +54,19 @@ def upload_file():
     if not bankname or bankname.lower() not in ['tangerine', 'cibc']:
         app.logger.warning(f"Invalid bankname provided: {bankname}")
         return jsonify({"message": "Invalid bank name. Must be 'tangerine' or 'cibc'."}), 400
+    
+    # API key existence check
+    if not os.path.exists(keyfile_path):
+        app.logger.error(f"Service Account key file not found at: {keyfile_path}")
+        return jsonify({"message": "Server configuration error: Service Account Key file is missing."}), 500
 
     filepath = None
     try:
         filename = secure_filename(csv_file.filename)
         filepath = os.path.join(UPLOAD_FOLDER, filename)
+        
         csv_file.save(filepath)
         app.logger.info(f"Temporary file saved at {filepath}")
-
-        keyfile_path = 'sample-25a27-e4c1004f429c.json'
 
         app.logger.info(f"Calling upload_to_sheet with: sheet_id='{spreadsheet_id}', keyword='{keyword}', bank='{bankname}', user_type='{usertype}'")
         upload_to_sheet(spreadsheet_id, keyword, filepath, bankname, usertype, keyfile_path)
@@ -67,6 +74,9 @@ def upload_file():
 
         return jsonify({"message": "File uploaded and processed successfully!"})
 
+    except (IOError, OSError) as e:
+        app.logger.error(f"File System or IO Error: {e}", exc_info=True)
+        return jsonify({"message": "Internal error: Failed to save or access the temporary file."}), 500
     except Exception as e:
         app.logger.error("Error during upload process:", exc_info=True)
         return jsonify({"message": "An error occurred during processing."}), 500
