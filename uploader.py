@@ -47,16 +47,17 @@ def infer_category(detail):
     lower_detail = detail.lower()
     if any(keyword in lower_detail for keyword in [
         "mcdonald", "popeyes", "ubereats", "steve's", "doordash", 'tim hortons', 'sushi',
-        "hee rae deung", "fantuan", "breka", "big way hot pot", 'ramen'
+        "hee rae deung", "fantuan", "breka", "big way hot pot", "ramen", "shawarma", "donair",
+        "sahel", "doordash"
     ]):
         return "Restaurant"
     elif any(keyword in lower_detail for keyword in [
         "costco", "save on foods", "urban fare", "h-mart", "oddbunch", "chit chat", "wal-mart", 
-        "no frills", "hellofresh", "chefs plate"
+        "no frills", "hellofresh", "chefs plate", "pricesmart", "T&T"
     ]):
         return "Groceries"
     elif any(keyword in lower_detail for keyword in [
-        "impark", "trip", "taxi", "uberone", "compass"
+        "impark", "trip", "taxi", "uberone", "compass", "parking"
     ]):
         return "Transportation"
     elif any(keyword in lower_detail for keyword in [
@@ -196,6 +197,6 @@ def upload_to_sheet(spreadsheet_id, worksheet_keyword, csv_filename, bankname, u
         end_row = start_row + len(batch_data) - 1
         range_str = f'A{start_row}:E{end_row}'
         worksheet.update(range_name=range_str, values=batch_data, value_input_option='USER_ENTERED')
-        logger.info("✅ All applicable rows (excluding FREEDOM) processed and uploaded to Google Sheet.")
+        logger.info("All applicable rows (excluding FREEDOM) processed and uploaded to Google Sheet.")
     else:
         logger.info("No applicable rows found to upload.")

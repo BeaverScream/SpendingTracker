@@ -1,6 +1,7 @@
 # Bank CSV to Google Sheets Uploader Server
 
 This project provides a web server to upload bank transaction CSV files (from Tangerine or CIBC) to a specified Google Sheet. It processes the CSV data and uploads it to the appropriate worksheet based on user type and month.
+This project is to make it easy to track my household monthly spending.
 
 ## Setup Instructions
 
