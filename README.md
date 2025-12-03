@@ -1,7 +1,31 @@
 # Bank CSV to Google Sheets Uploader Server
 
-This project provides a web server to upload bank transaction CSV files (from Tangerine or CIBC) to a specified Google Sheet. It processes the CSV data and uploads it to the appropriate worksheet based on user type and month.
-This project is to make it easy to track my household monthly spending.
+This project is a Python-based web server that processes bank transaction CSV files (from Tangerine or CIBC) uploaded by the user. It applies categorization rules (pre-determined by the spreadsheet) based on keywords in the transaction description and then uploads the processed results to the selected Google Sheet using batch updates to significantly reduce Google Sheets API usage. The data is routed to the appropriate worksheet based on user type (wife or husband) and sheet name (usually month name).
+
+This tool streamlines my household expense tracking by making monthly spending organization fast and reliable.
+
+## 📸 Visual Demonstration
+
+These images show the user interface for file upload and the final result of the automated data processing pipeline.
+
+### 1. Web Upload Interface
+
+This simple Flask web page allows users to input the required spreadsheet parameters and select the local bank CSV file before processing begins.
+
+![Upload Interface](resources/page.jpg)
+
+### 2. Google Sheet (Before Running)
+
+This is a view of the target Google Sheet before the upload process is initiated.
+
+![Google Sheet Before Upload](resources/BeforeRunning.jpg)
+
+### 3. Google Sheet (After Running)
+
+This view shows the Google Sheet automatically populated with the clean, standardized transaction data after the Python/Flask server has processed the CSV and interacted with the Google Sheets API.
+
+![Google Sheet After Upload](resources/AfterRunning.jpg)
+
 
 ## Setup Instructions
 
