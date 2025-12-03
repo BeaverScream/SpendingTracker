@@ -12,7 +12,7 @@ These images show the user interface for file upload and the final result of the
 
 This simple Flask web page allows users to input the required spreadsheet parameters and select the local bank CSV file before processing begins.
 
-![Upload Interface](resources/page.jpg)
+![Upload Interface](resources/Page.jpg)
 
 ### 2. Google Sheet (Before Running)
 
